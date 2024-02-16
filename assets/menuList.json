@@ -1,0 +1,44 @@
+[
+    {
+        "id": 1,
+        "title": "Vender agora",
+        "route": "sell",
+        "icon": "shopping-cart"
+    },
+    {
+        "id": 2,
+        "title": "Caixa",
+        "route": "cash",
+        "icon": "cash-register"
+    },
+    {
+        "id": 3,
+        "title": "Notas",
+        "route": "notes",
+        "icon": "clipboard-notes"
+    },
+    {
+        "id": 4,
+        "title": "Configurações",
+        "route": "settings",
+        "icon": "settings"
+    },
+    {
+        "id": 5,
+        "title": "Clientes",
+        "route": "clients",
+        "icon": "users"
+    },
+    {
+        "id": 6,
+        "title": "Produtos",
+        "route": "products",
+        "icon": "shop"
+    },
+    {
+        "id": 7,
+        "title": "Vendedores",
+        "route": "vender",
+        "icon": "users"
+    }
+]
