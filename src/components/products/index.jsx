@@ -4,7 +4,7 @@ import * as C from './../../screens/sell/styles'
 
 // import { Container } from './styles';
 
-export default function ProductsList({ item, setSelected }) {
+export default function ProductsList({ item, setSelected, type }) {
     return (
         <C.Products
             onPress={() => setSelected(item)}
@@ -12,6 +12,7 @@ export default function ProductsList({ item, setSelected }) {
             <View>
                 <C.ProductText>{item.nome}</C.ProductText>
                 <C.Codigo>{item.codigoDeBarras}</C.Codigo>
+
             </View>
             <View>
                 <C.Value>R${item.valor}</C.Value>

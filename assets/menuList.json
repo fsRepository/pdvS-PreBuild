@@ -38,7 +38,7 @@
     {
         "id": 7,
         "title": "Vendedores",
-        "route": "vender",
+        "route": "sellers",
         "icon": "users"
     }
 ]

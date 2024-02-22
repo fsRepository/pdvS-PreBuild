@@ -33,7 +33,6 @@ export const ContentLogin = styled.View`
 width:80%;
 height:50%;
 border-radius:10px;
-background-color: rgba(0, 0, 0, 0.5);
 justify-content:center;
 align-items:center;
 
@@ -61,6 +60,7 @@ shadow-color: #000000;
   }
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
+margin-start:10;
 
 
 

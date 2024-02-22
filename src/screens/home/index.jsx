@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, SafeAreaView } from 'react-native';
 import Header from '../../components/header';
 import ListMenu from '../../../assets/menuList.json'
 import * as C from './../styles/globalStyles'
@@ -38,7 +38,7 @@ export default function Home() {
     return (
 
 
-        <View>
+        <SafeAreaView style={{ flex: 1 }}>
             <Header />
             <FlatList
 
@@ -47,7 +47,7 @@ export default function Home() {
                 keyExtractor={(item, index) => item.id}
                 renderItem={({ item }) => <RenderMenu item={item} />}
             />
-        </View>
+        </SafeAreaView>
 
     )
 }

@@ -8,6 +8,7 @@ import Colors from './../../../assets/colors.json'
 import { useNavigation } from '@react-navigation/native';
 import UserIcon from 'react-native-vector-icons/AntDesign'
 import Logo from './../../../assets/logo.png'
+import * as Animatable from 'react-native-animatable'
 export default function Login() {
 
 
@@ -20,7 +21,14 @@ export default function Login() {
 
 
         <C.ContainerLogin>
-            <Image source={Logo} style={{ width: 80, height: 80 }} />
+            <Animatable.Image
+                animation="zoomInDown"
+                duration={1000}
+                source={Logo} style={{ width: 80, height: 80 }} />
+            <Animatable.Text
+                animation='zoomInUp'
+                duration={1000}
+                style={{ color: 'white', marginBottom: 10, fontSize: 16 }}>ePDV</Animatable.Text>
             <C.TitleLogin>Login</C.TitleLogin>
             <C.ContentLogin>
                 <C.Inputs>
@@ -57,7 +65,8 @@ export default function Login() {
                     <Button
                         onPress={() => { navigation.navigate('home') }}
                         title='Acessar'
-                        buttonStyle={{ width: 200, backgroundColor: Colors.orange }}
+                        titleStyle={{ color: Colors.orange }}
+                        buttonStyle={{ width: 200, backgroundColor: 'white', }}
                     />
                 </C.Inputs>
 

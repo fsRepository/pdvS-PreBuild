@@ -1,15 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Keyboard } from 'react-native';
+import React, { useState, useContext, useEffect, } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { contextAuth } from '../../context';
 import MoneyIcon from 'react-native-vector-icons/FontAwesome5'
 import CardIcon from 'react-native-vector-icons/Entypo'
 import RealIcon from 'react-native-vector-icons/FontAwesome6'
+import PixIcon from 'react-native-vector-icons/MaterialIcons'
 import Colors from '../../../assets/colors.json'
 import { Button, Input } from '@rneui/themed';
 import { TextInputMask } from 'react-native-masked-text';
 import UserIcon from 'react-native-vector-icons/AntDesign'
 import { useNavigation } from '@react-navigation/native';
 // import { Container } from './styles';
+import { useToast } from 'react-native-toast-notifications';
 
 export default function CheckoutConfirm() {
 
@@ -18,11 +20,18 @@ export default function CheckoutConfirm() {
         { id: 1, nome: 'Dinheiro' },
         { id: 2, nome: 'C.Débito' },
         { id: 3, nome: 'C.Crédito' },
-        { id: 4, nome: 'Crediário' }
+        { id: 4, nome: 'Crediário' },
+        { id: 5, nome: 'Pix' }
     ];
 
 
     console.log(desconto)
+    //função pra fechar o teclado quando clicar fora
+
+
+    function CloseTeclado() {
+        Keyboard.dismiss();
+    }
 
     //armazena o metodo de pagamento utilizasdo pelo cliente
     const [method, setMethod] = useState('Dinheiro')
@@ -41,7 +50,7 @@ export default function CheckoutConfirm() {
     //const para armazenar os valores das parcelas
     const [selectParcel, setSelectParcel] = useState(1)
     const [valueParcel, setValueParcel] = useState('')
-
+    const toast = useToast()
     //opçõesde parcelamento quando a forma de pagamento for cartão de credito
     //navegação
     const navigation = useNavigation()
@@ -159,16 +168,20 @@ export default function CheckoutConfirm() {
 
     }, [selectParcel])
 
+    function ConfirmSale() {
 
+        navigation.navigate('impressao')
+    }
     //mostra as formas de pagamento
     function RenderPayment({ item }) {
         return (
-            <View >
+            <View  >
                 <TouchableOpacity style={{
                     alignItems: 'center', justifyContent: 'center', marginLeft: 15, borderWidth: 1,
                     borderRadius: 6,
                     borderColor: item.nome === method ? Colors.orange : 'grey', // Verifica se este item está selecionado
                     padding: 6,
+                    width: 80
 
                 }}
 
@@ -183,7 +196,7 @@ export default function CheckoutConfirm() {
                                     <CardIcon name='v-card' size={30} color={item.nome === method ? Colors.orange : 'grey'} /> :
                                     item.nome === 'Crediário' ?
                                         <CardIcon name='credit' size={30} color={item.nome === method ? Colors.orange : 'grey'} /> :
-                                        null // Se nenhum dos casos corresponder, renderiza null ou outro componente de fallback
+                                        <PixIcon name='pix' size={30} color={item.nome === method ? Colors.orange : 'grey'} /> // Se nenhum dos casos corresponder, renderiza null ou outro componente de fallback
                     }
 
                     <Text style={{ fontSize: 16 }}>{item.nome}</Text>
@@ -194,209 +207,221 @@ export default function CheckoutConfirm() {
     }
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ alignItems: 'center' }}>
+        <TouchableWithoutFeedback onPress={CloseTeclado}>
+            <View onPress={CloseTeclado} style={{ flex: 1 }}>
+
+                <View style={{ alignItems: 'center' }}>
 
 
-                <TouchableOpacity style={{ position: 'absolute', right: 20, top: 10 }}
-                    onPress={() => navigation.navigate('addclient')}
-                >
-                    <UserIcon name='adduser' size={30} />
+                    <TouchableOpacity style={{ position: 'absolute', right: 20, top: 10 }}
+                        onPress={() => navigation.navigate('addclient')}
+                    >
+                        <UserIcon name='adduser' size={30} />
 
-                </TouchableOpacity>
+                    </TouchableOpacity>
 
-                {
-                    desconto !== 0 || desconto === '' ?
-                        <View style={{ alignItems: 'center', marginBottom: -10 }}>
-                            <View style={{ backgroundColor: 'grey', width: 100, height: 2, position: 'absolute', top: 22 }}>
+                    {
+                        desconto !== 0 || desconto === '' ?
+                            <View style={{ alignItems: 'center', marginBottom: -10 }}>
+                                <View style={{ backgroundColor: 'grey', width: 100, height: 2, position: 'absolute', top: 22 }}>
+
+                                </View>
+                                <View>
+                                    <Text style={{ fontSize: 20, marginTop: 10, fontWeight: '700', color: 'grey' }}>R${valuePrevent}</Text>
+                                </View>
 
                             </View>
-                            <View>
-                                <Text style={{ fontSize: 20, marginTop: 10, fontWeight: '700', color: 'grey' }}>R${valuePrevent}</Text>
-                            </View>
+                            : ''
 
-                        </View>
-                        : ''
-
-                }
-                <Text style={{ fontSize: 40, marginTop: 10, fontWeight: '700' }}>R${totalValue}</Text>
-
-
-                <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}> Forma de pagamento</Text>
-
-                <FlatList
-                    horizontal={true}
-
-                    keyExtractor={(item, index) => item.id.toString()}
-                    data={formasDePagamento}
-                    renderItem={({ item }) =>
-
-                        <RenderPayment item={item} />
                     }
-
-                />
-
-            </View>
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={{ alignItems: 'center', justifyContent: 'center', marginTop: 10 }} >
+                    <Text style={{ fontSize: 40, marginTop: 10, fontWeight: '700' }}>R${totalValue}</Text>
 
 
+                    <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}> Forma de pagamento</Text>
 
-                <Text style={{ fontSize: 16, marginBottom: 10 }}>Aplicar Desconto</Text>
+                    <FlatList
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item, index) => item.id.toString()}
+                        data={formasDePagamento}
+                        renderItem={({ item }) =>
 
-                <View style={{ flexDirection: 'row', gap: 30, }}>
-                    <TouchableOpacity
-                        onPress={() => setTipoDesconto('Porcentagem')}
-                    >
-                        <MoneyIcon name='percentage' size={30} color={tipoDesconto === 'Porcentagem' ? Colors.orange : 'grey'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setTipoDesconto('Dinheiro')}
-                    >
-                        <RealIcon name='brazilian-real-sign' size={30} color={tipoDesconto === 'Dinheiro' ? Colors.orange : 'grey'} />
-                    </TouchableOpacity>
+                            <RenderPayment item={item} />
+                        }
+
+                    />
+
+
                 </View>
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={{ alignItems: 'center', justifyContent: 'center', marginTop: 10 }} >
 
 
-                {
-                    tipoDesconto === 'Dinheiro' ?
-                        <TextInputMask
-                            style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 15 }}
-                            type={'money'}
-                            options={{
-                                precision: 2,
-                                separator: ',',
-                                delimiter: '.',
-                                unit: 'R$',
-                                suffixUnit: '',
-                            }}
-                            value={desconto}
-                            placeholder={desconto.toString()}
-                            onChangeText={(value) => setDesconto(value)}
 
-                        /> :
+                    <Text style={{ fontSize: 16, marginBottom: 10 }}>Aplicar Desconto</Text>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TextInput
+                    <View style={{ flexDirection: 'row', gap: 30, }}>
+                        <TouchableOpacity
+                            onPress={() => setTipoDesconto('Porcentagem')}
+                        >
+                            <MoneyIcon name='percentage' size={30} color={tipoDesconto === 'Porcentagem' ? Colors.orange : 'grey'} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setTipoDesconto('Dinheiro')}
+                        >
+                            <RealIcon name='brazilian-real-sign' size={30} color={tipoDesconto === 'Dinheiro' ? Colors.orange : 'grey'} />
+                        </TouchableOpacity>
+                    </View>
 
+
+                    {
+                        tipoDesconto === 'Dinheiro' ?
+                            <TextInputMask
                                 style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 15 }}
-                                keyboardType='numeric'
+                                type={'money'}
+                                options={{
+                                    precision: 2,
+                                    separator: ',',
+                                    delimiter: '.',
+                                    unit: 'R$',
+                                    suffixUnit: '',
+                                }}
                                 value={desconto}
                                 placeholder={desconto.toString()}
                                 onChangeText={(value) => setDesconto(value)}
-                            />
-                            <Text style={{ fontSize: 20 }}>%</Text>
-                        </View>
-                }
 
-                {
-                    method === 'C.Crédito' ?
-                        <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}>Parcelamento</Text> : ''
-                }
-                {
-                    method === 'C.Crédito' ?
+                            /> :
 
-                        <FlatList
-                            showsHorizontalScrollIndicator={false}
-                            data={parcelamentos}
-                            horizontal
-                            keyExtractor={(item, index) => item.id.toString()}
-                            renderItem={({ item }) =>
-                                <View style={{ marginStart: 10, marginEnd: 10 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TextInput
 
-                                    <TouchableOpacity style={{
-                                        backgroundColor: selectParcel === item.parcelas ? Colors.orange : 'grey',
-                                        marginTop: 20, marginHorizontal: 5,
-                                        width: 40, height: 40,
-                                        alignItems: 'center', justifyContent: 'center',
-                                        borderRadius: 6
+                                    style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 15 }}
+                                    keyboardType='numeric'
+                                    value={desconto}
+                                    placeholder={desconto.toString()}
+                                    onChangeText={(value) => setDesconto(value)}
+                                />
+                                <Text style={{ fontSize: 20 }}>%</Text>
+                            </View>
+                    }
 
-                                    }}
-                                        onPress={() => {
-                                            setSelectParcel(item.parcelas)
+                    {
+                        method === 'C.Crédito' ?
+                            <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}>Parcelamento</Text> : ''
+                    }
+                    {
+                        method === 'C.Crédito' ?
+
+                            <FlatList
+                                showsHorizontalScrollIndicator={false}
+                                data={parcelamentos}
+                                horizontal
+                                keyExtractor={(item, index) => item.id.toString()}
+                                renderItem={({ item }) =>
+                                    <View style={{ marginStart: 10, marginEnd: 10 }}>
+
+                                        <TouchableOpacity style={{
+                                            backgroundColor: selectParcel === item.parcelas ? Colors.orange : 'grey',
+                                            marginTop: 20, marginHorizontal: 5,
+                                            width: 40, height: 40,
+                                            alignItems: 'center', justifyContent: 'center',
+                                            borderRadius: 6
 
                                         }}
-                                    >
-                                        <Text style={{ fontSize: 18 }}>{item.parcelas}x</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                            onPress={() => {
+                                                setSelectParcel(item.parcelas)
 
-                            }
-                        />
-                        : ''
-                }
-                {
-                    valueParcel !== '' ?
-                        <Text
-                            style={{ fontSize: 18, fontWeight: 'bold', marginTop: 10 }}
-                        >{selectParcel}x de R${valueParcel} </Text> : ''
-                }
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 18 }}>{item.parcelas}x</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
-                {method === 'C.Crédito' ? '' :
+                                }
+                            />
+                            : ''
+                    }
+                    {
+                        valueParcel !== '' && method === 'C.Crédito' ?
+                            <Text
+                                style={{ fontSize: 18, fontWeight: 'bold', marginTop: 10 }}
+                            >{selectParcel}x de R${valueParcel} </Text> : ''
+                    }
 
-
-                    <View>
-                        <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10, textAlign: 'center' }}>Recebido</Text>
-
-                        <TextInputMask
-
-                            style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 10 }}
-                            type={'money'}
-                            value={recebido}
-                            onChangeText={(text) => setRecebido(text)}
-                            options={{
-                                precision: 2,
-                                separator: ',',
-                                delimiter: '.',
-                                unit: 'R$',
-                                suffixUnit: '',
-                            }}
+                    {method === 'C.Crédito' || method === 'Pix' ? '' :
 
 
-                        />
-                    </View>
-                }
-
-
-                {
-                    ativeErrorMessage === true ?
-                        <Text style={{ color: 'red' }}>{errorMessage}</Text> :
-                        ''
-                }
-
-                {
-                    method === 'Dinheiro' ?
                         <View>
-                            <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10, textAlign: 'center' }}>Troco</Text>
+                            <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10, textAlign: 'center' }}>Recebido</Text>
 
-                            <Text style={{
-                                width: 200, borderBottomColor: 'grey',
-                                borderBottomWidth: 1, fontSize: 20,
-                                textAlign: 'center', marginTop: 10,
-                                color: 'green'
-                            }}>R${isNaN(troco) ? '' : troco}</Text>
+                            <TextInputMask
+
+                                style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 10 }}
+                                type={'money'}
+                                value={recebido}
+                                onChangeText={(text) => setRecebido(text)}
+                                options={{
+                                    precision: 2,
+                                    separator: ',',
+                                    delimiter: '.',
+                                    unit: 'R$',
+                                    suffixUnit: '',
+                                }}
+
+
+                            />
                         </View>
-                        : ''
-
-                }
+                    }
 
 
+                    {
+                        ativeErrorMessage === true ?
+                            <Text style={{ color: 'red' }}>{errorMessage}</Text> :
+                            ''
+                    }
+
+                    {
+                        method === 'Dinheiro' ?
+                            <View>
+                                <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10, textAlign: 'center' }}>Troco</Text>
+
+                                <Text style={{
+                                    width: 200, borderBottomColor: 'grey',
+                                    borderBottomWidth: 1, fontSize: 20,
+                                    textAlign: 'center', marginTop: 10,
+                                    color: 'green'
+                                }}>R${isNaN(troco) ? '' : troco}</Text>
+                            </View>
+                            : ''
+
+                    }
 
 
 
-            </KeyboardAvoidingView>
-            <View style={{ alignItems: 'center' }}>
 
-                <Button
-                    title='Finalizar Venda'
-                    color={Colors.orange}
-                    containerStyle={{ marginTop: 30, width: 200, borderRadius: 6 }}
-                />
 
-            </View>
+                </KeyboardAvoidingView>
+                <View style={{ alignItems: 'center' }}>
 
-        </View >
+                    {
+                        method === 'Pix' ?
+                            <Button
+                                title='Gerar QR Code'
+                                buttonStyle={{ marginTop: 20 }}
+                            /> : ''
+                    }
+                    <Button
+                        onPress={ConfirmSale}
+                        title='Finalizar Venda'
+                        color={Colors.orange}
+                        containerStyle={{ marginTop: 30, width: 200, borderRadius: 6 }}
+                    />
+
+                </View>
+
+            </View >
+        </TouchableWithoutFeedback>
 
     )
 }

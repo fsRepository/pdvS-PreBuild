@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import Header from '../../components/headerDate';
 import * as C from './styles'
+import * as A from '../sell/styles'
 // import { Container } from './styles';
+import Menu from 'react-native-vector-icons/AntDesign'
 import RenderHistoric from './../../components/renderHistoric/index';
+import { Button, Input, Overlay } from '@rneui/themed';
+import { format } from 'date-fns';
+import { TextInputMask } from 'react-native-masked-text';
+import Setting from 'react-native-vector-icons/MaterialCommunityIcons'
+import Colors from '../../../assets/colors.json'
 
-export default function Cash() {
+
+export default function Cash({ handleMenu }) {
 
     const historicoDoCaixa = [
         { data: '2024-02-16', hora: '10:30', tipo: 'entrada', entrada: 1500, venda: 1001 },
@@ -23,6 +31,21 @@ export default function Cash() {
 
     const [dateStart, setDateStart] = useState(new Date())
     const [dateEnd, setDateEnd] = useState(new Date())
+    const [supp, setSupp] = useState('')
+
+    //abre o modal de opções
+    const [modalOptions, setModalOptions] = useState(false)
+    const date = new Date()
+
+    const [openModal, setOpenModal] = useState(false)
+
+    function FormatData(value) {
+        const forma = format(value, 'dd/MM/yyyy')
+        return forma;
+    }
+
+    //função menu presente no header da stack
+
     return (
         <C.Container>
             <C.Header>
@@ -32,7 +55,19 @@ export default function Cash() {
                     setDateEnd={setDateEnd}
                 />
 
-                <C.Cashier>Operador: Joanderson</C.Cashier>
+                <View style={{ width: 150 }}>
+                    <TouchableOpacity
+                        onPress={() => setOpenModal(true)}
+                    >
+                        <C.Status>
+                            Aberto
+                        </C.Status>
+                    </TouchableOpacity>
+                    <C.Cashier>Operador: Joanderson</C.Cashier>
+
+
+                </View>
+
             </C.Header>
             <FlatList
                 data={historicoDoCaixa}
@@ -40,8 +75,65 @@ export default function Cash() {
                 renderItem={({ item }) =>
                     <RenderHistoric item={item} />
                 }
-            />
+                refreshControl={
+                    <RefreshControl
 
+                    />
+                }
+            />
+            <View style={{ alignItems: 'center' }}>
+                <A.ChekValue style={{ flexDirection: 'row' }}
+                    onPress={() => setModalOptions(true)}
+                >
+                    <A.ChekText>
+                        Saldo atual: R$450,00
+                    </A.ChekText>
+
+                </A.ChekValue>
+
+
+            </View>
+
+            {/*modalde opções*/}
+
+            <Overlay overlayStyle={{ backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0 }} isVisible={modalOptions} onBackdropPress={() => setModalOptions(!modalOptions)}>
+                <View style={{ width: 300, height: 100, gap: 10, justifyContent: 'center', }}>
+                    <TouchableOpacity style={{ backgroundColor: "#e6e6e6", padding: 6, borderRadius: 6 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '500' }}>Relatório</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ backgroundColor: "#e6e6e6", padding: 6, borderRadius: 6 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '500' }}>Resumo</Text>
+                    </TouchableOpacity>
+                </View>
+            </Overlay>
+
+            <Overlay
+                isVisible={openModal}
+                onBackdropPress={() => setOpenModal(!openModal)}
+            >
+                <C.ModalCash>
+                    <C.Title>Fechar Caixa</C.Title>
+                    <C.Date>{FormatData(date)}</C.Date>
+                    <TextInputMask
+                        style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 15 }}
+                        type={'money'}
+                        options={{
+                            precision: 2,
+                            separator: ',',
+                            delimiter: '.',
+                            unit: 'R$',
+                            suffixUnit: '',
+                        }}
+                        value={supp}
+                        onChangeText={(text) => setSupp(text)}
+
+                    />
+                    <Button
+                        title='Gravar'
+                        buttonStyle={{ backgroundColor: Colors.orange, width: 200, marginTop: 20 }}
+                    />
+                </C.ModalCash>
+            </Overlay>
         </C.Container>
     )
 }

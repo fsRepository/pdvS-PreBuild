@@ -4,15 +4,17 @@ import SplashScreen from './src/splashScreen/index'
 import { NavigationContainer } from '@react-navigation/native'
 import StackRoute from './src/routes/stack';
 import Context from './src/context';
-import Toast from 'react-native-toast-message';
+import { ToastProvider } from 'react-native-toast-notifications';
 export default function App() {
   return (
 
     <NavigationContainer>
-      <Toast />
-      <Context>
 
-        <StackRoute />
+      <Context>
+        <ToastProvider>
+          <StackRoute />
+        </ToastProvider>
+
       </Context>
 
 

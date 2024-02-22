@@ -5,8 +5,10 @@ import { Overlay, Input, Button } from '@rneui/themed';
 import * as C from '../sell/styles'
 import BagIcon from 'react-native-vector-icons/Entypo'
 import { contextAuth } from '../../context/index';
+import CarIcon from 'react-native-vector-icons/Fontisto'
 // import { Container } from './styles';
 import Colors from '../../../assets/colors.json'
+import { useToast } from 'react-native-toast-notifications';
 export default function Checkout() {
 
 
@@ -21,6 +23,9 @@ export default function Checkout() {
     const navigation = useNavigation()
     const { checkout, totalValue, setCheckout, setTotalItems, setTotalValue, totalItems } = useContext(contextAuth);
 
+
+    //const toast para messages
+    const toast = useToast()
 
     //função para animar o tab
     useEffect(() => {
@@ -243,6 +248,18 @@ export default function Checkout() {
 
 
             </Overlay>
+            <TouchableOpacity style={{ marginBottom: 70, flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                onPress={() => {
+                    setCheckout([])
+
+                }}
+
+            >
+                <CarIcon name='shopping-basket-remove' size={24} color={Colors.orange} />
+                <Text style={{ fontSize: 16, fontWeight: '500' }}>Esvaziar carrinho</Text>
+            </TouchableOpacity>
+
+
             <Animated.View
                 style={{
                     backgroundColor: Colors.orange,
@@ -258,9 +275,18 @@ export default function Checkout() {
 
             >
 
+
                 <TouchableOpacity
 
-                    onPress={() => navigation.navigate('confirm')}>
+                    onPress={() => {
+                        if (checkout.length === 0) {
+                            console.log('Você ainda não tem nada no carrinho')
+                            toast.show('Ainda não tem nada no carrinho')
+                        } else {
+                            navigation.navigate('confirm')
+                        }
+
+                    }}>
                     <C.ChekText>
                         {totalItems} itens = R${totalValue}
                     </C.ChekText>
