@@ -6,12 +6,21 @@ import CardIcon from 'react-native-vector-icons/Entypo'
 import RealIcon from 'react-native-vector-icons/FontAwesome6'
 import PixIcon from 'react-native-vector-icons/MaterialIcons'
 import Colors from '../../../assets/colors.json'
-import { Button, Input } from '@rneui/themed';
+import { Button, Input, Overlay } from '@rneui/themed';
 import { TextInputMask } from 'react-native-masked-text';
 import UserIcon from 'react-native-vector-icons/AntDesign'
 import { useNavigation } from '@react-navigation/native';
 // import { Container } from './styles';
 import { useToast } from 'react-native-toast-notifications';
+import PdfIcon from 'react-native-vector-icons/AntDesign'
+import NoteIcon from 'react-native-vector-icons/FontAwesome'
+import * as Print from 'expo-print'
+import * as FileSystem from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
+import QrCodePix from '../../components/qrCodePix';
+
+//pdffile1
+//sticky-note
 
 export default function CheckoutConfirm() {
 
@@ -54,6 +63,11 @@ export default function CheckoutConfirm() {
     //opçõesde parcelamento quando a forma de pagamento for cartão de credito
     //navegação
     const navigation = useNavigation()
+
+    //abre e fecha o modal quando finaliza a comora
+    const [finallyOpen, setFinallyOpen] = useState(false)
+
+    const [openPix, setOpenPix] = useState(false)
 
     const parcelamentos = [
         { id: 1, parcelas: 1 },
@@ -125,7 +139,7 @@ export default function CheckoutConfirm() {
             if (total > 0) {
                 console.log('O valor recebido ainda não está completo. Falta pagar: ' + total.toFixed(2) + ' pago: ' + receiveformat.toFixed(2));
                 setAtiveErrorMessage(true);
-                setTroco('');
+                setTroco('0,00');
             } else if (total < 0) {
                 setAtiveErrorMessage(false);
                 let trocoTotal = Math.abs(total);
@@ -169,9 +183,66 @@ export default function CheckoutConfirm() {
     }, [selectParcel])
 
     function ConfirmSale() {
+        setFinallyOpen(true)
 
-        navigation.navigate('impressao')
+
     }
+
+    //função para gerar um pdf com o pagamento
+    async function handlePrint() {
+        let checkoutItens = '';
+        checkout.forEach(item => {
+            checkoutItens += `
+                <p><strong>Produto:</strong> ${item.nome}</p>
+                <p><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p><strong>Valor Unitário:</strong> R$ ${item.valorUnitario}</p>
+                <p><strong>Valor Total:</strong> R$ ${item.valor}</p>
+                <br />
+            `;
+        });
+
+        const htmlPedido = `
+            <div style="font-family: monospace; font-size: 12px;">
+                <h1 style="text-align: center;">Nota Fiscal</h1>
+                ${checkoutItens}
+                <p><strong>Desconto:</strong> ${desconto}</p>
+                <p><strong>Valor Recebido:</strong> ${recebido}</p>
+                <p><strong>Troco:</strong> ${troco}</p>
+                <p><strong>Forma de Pagamento:</strong> ${method}</p>
+                <p><strong>Parcelado:</strong> ${method === 'C.Crédito' ? 'Sim' : 'Não'}</p>
+                <br />
+                <p style="text-align: center;">Obrigado pela preferência!</p>
+            </div>
+        `;
+
+        console.log(htmlPedido);
+
+        if (htmlPedido && checkoutItens) {
+            const pedidoHtml = htmlPedido;
+            const { uri } = await Print.printToFileAsync({ html: pedidoHtml })
+
+            if (uri.startsWith('file://')) {
+                //posso compartilhar ou salvar o pdf 
+                await Sharing.shareAsync(uri)
+                // await Print.printAsync({ uri: uri });
+
+            } else {
+                console.log('uri inválido', uri)
+            }
+
+
+        }
+    }
+
+    //função para buscar impressoras
+    const [printer, setPrinters] = useState([])
+    async function HandleNfce() {
+
+    }
+    async function searchForPrinters() {
+
+    }
+
     //mostra as formas de pagamento
     function RenderPayment({ item }) {
         return (
@@ -181,7 +252,7 @@ export default function CheckoutConfirm() {
                     borderRadius: 6,
                     borderColor: item.nome === method ? Colors.orange : 'grey', // Verifica se este item está selecionado
                     padding: 6,
-                    width: 80
+                    width: 85
 
                 }}
 
@@ -406,10 +477,16 @@ export default function CheckoutConfirm() {
 
                     {
                         method === 'Pix' ?
-                            <Button
-                                title='Gerar QR Code'
-                                buttonStyle={{ marginTop: 20 }}
-                            /> : ''
+                            <View>
+
+                                <Button
+                                    onPress={() => setOpenPix(true)}
+                                    title='Gerar QR Code'
+                                    buttonStyle={{ marginTop: 20 }}
+                                />
+
+                            </View>
+                            : ''
                     }
                     <Button
                         onPress={ConfirmSale}
@@ -420,6 +497,43 @@ export default function CheckoutConfirm() {
 
                 </View>
 
+                {/*abre o qr code pix */}
+                <Overlay
+                    isVisible={openPix}
+                    onBackdropPress={() => setOpenPix(!openPix)}
+                >
+                    <View style={{ width: 300, height: 300, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 18, marginBottom: 10 }}>Pix para pagamento de R${totalValue}</Text>
+                        <QrCodePix valor={totalValue} />
+
+                    </View>
+                </Overlay>
+
+                {/*MODAL QIE SERA MOSTRADO QUANDO A VENDA FOR FINALIZADA */}
+                <Overlay isVisible={finallyOpen} onBackdropPress={() => setFinallyOpen(!finallyOpen)}>
+                    <View style={{ width: 300, height: 150, alignItems: 'center', gap: 10 }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Pedido N.526505</Text>
+                        <TouchableOpacity
+                            onPress={handlePrint}
+                            style={{
+                                backgroundColor: '#e6e6e6', padding: 6, width: 250, borderRadius: 6,
+                                flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center'
+                            }}>
+                            <Text style={{ fontSize: 18, fontWeight: '500' }}>Gerar PDF</Text>
+                            <PdfIcon name='pdffile1' size={24} color='#b81414' />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={HandleNfce}
+                            style={{
+                                backgroundColor: '#e6e6e6', padding: 6, width: 250, borderRadius: 6,
+                                flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center'
+                            }}>
+                            <Text style={{ fontSize: 18, fontWeight: '500' }}>Gerar NFCE</Text>
+                            <NoteIcon name='sticky-note-o' size={24} color='#d7d350' />
+                        </TouchableOpacity>
+
+                    </View>
+                </Overlay>
             </View >
         </TouchableWithoutFeedback>
 

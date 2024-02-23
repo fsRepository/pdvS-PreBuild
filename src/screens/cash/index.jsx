@@ -112,8 +112,16 @@ export default function Cash({ handleMenu }) {
                 onBackdropPress={() => setOpenModal(!openModal)}
             >
                 <C.ModalCash>
-                    <C.Title>Fechar Caixa</C.Title>
-                    <C.Date>{FormatData(date)}</C.Date>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20, justifyContent: 'center' }}>
+                        <C.Title>Fechar Caixa</C.Title>
+                        <C.Title>{FormatData(date)}</C.Title>
+                    </View>
+
+
+                    <Text style={{ fontSize: 16, marginTop: 10 }}>Valor disponivel no caixa: </Text>
+                    <Text style={{ fontSize: 25, fontWeight: '700' }}>R$135,50</Text>
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>Sangria</Text>
+
                     <TextInputMask
                         style={{ width: 200, borderBottomColor: 'grey', borderBottomWidth: 1, fontSize: 20, textAlign: 'center', marginTop: 15 }}
                         type={'money'}
